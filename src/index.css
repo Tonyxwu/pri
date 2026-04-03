@@ -1,0 +1,852 @@
+:root {
+  --bg-deep: #0c0608;
+  --bg-panel: #150a0d;
+  --border: #3d282c;
+  --text: #f2e9eb;
+  --muted: #9e8e92;
+  /* UI chrome — dark rose, not bright blue */
+  --accent: #c75c6b;
+  --accent-dim: rgba(199, 92, 107, 0.35);
+  --accent-glow: rgba(199, 92, 107, 0.12);
+  --alliance-red: #e85d6f;
+  --alliance-blue: #6b9cff;
+  --warn: #d4a04a;
+  --ok: #6aab7d;
+  /* Corners: subtle, not pill-shaped */
+  --r-sm: 3px;
+  --r-md: 4px;
+  --r-lg: 6px;
+  /* Fluid type: rem + vw — stable on ~16:9; avoids vmin stretching on odd aspect ratios */
+  --fs-xs: clamp(0.75rem, 0.7rem + 0.18vw, 0.875rem);
+  --fs-sm: clamp(0.8125rem, 0.76rem + 0.22vw, 0.9375rem);
+  --fs-md: clamp(0.9375rem, 0.85rem + 0.32vw, 1.0625rem);
+  --fs-lg: clamp(1.0625rem, 0.92rem + 0.45vw, 1.25rem);
+  --fs-match-title: clamp(1.5rem, 1.15rem + 1.1vw, 2.35rem);
+  --fs-timer: clamp(4rem, 2.5rem + 6.5vw, 8.25rem);
+  --fs-timer-soon: clamp(3.25rem, 2.1rem + 5vw, 6.25rem);
+  --fs-roster-title: clamp(1.2rem, 1.02rem + 0.7vw, 1.65rem);
+  --fs-roster-line: clamp(1.1rem, 1rem + 0.55vw, 1.45rem);
+  font-family: "DM Sans", system-ui, sans-serif;
+  color: var(--text);
+  background: var(--bg-deep);
+  line-height: 1.4;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: radial-gradient(
+    ellipse 120% 80% at 50% -20%,
+    #1f0f14 0%,
+    var(--bg-deep) 55%
+  );
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+/* ——— Full-viewport shell (no page scroll) ——— */
+.shell {
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 6px solid rgba(90, 45, 52, 0.85);
+}
+
+.shell.side-red {
+  border-left-color: var(--alliance-red);
+  box-shadow: inset 6px 0 0 rgba(232, 93, 111, 0.35);
+}
+
+.shell.side-blue {
+  border-left-color: var(--alliance-blue);
+  box-shadow: inset 6px 0 0 rgba(107, 156, 255, 0.3);
+}
+
+.top-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.65rem;
+  background: rgba(12, 6, 8, 0.94);
+  border-bottom: 1px solid var(--border);
+  min-height: 2.75rem;
+}
+
+.top-bar-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.brand {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.top-event {
+  font-size: var(--fs-md);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-team {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.alliance-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--r-md);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.alliance-pill.is-red {
+  background: rgba(232, 93, 111, 0.18);
+  color: #f5b8c0;
+  border: 1px solid rgba(232, 93, 111, 0.4);
+}
+
+.alliance-pill.is-blue {
+  background: rgba(107, 156, 255, 0.14);
+  color: #b8d0ff;
+  border: 1px solid rgba(107, 156, 255, 0.38);
+}
+
+.alliance-pill-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  opacity: 0.85;
+  font-weight: 700;
+}
+
+.alliance-pill-value {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.35rem;
+}
+
+.btn-compact {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+}
+
+.main-area {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ——— Setup modal (internal scroll only) ——— */
+.setup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: min(4vh, 2rem) 1rem;
+  overflow: auto;
+}
+
+.setup-modal {
+  width: min(720px, 100%);
+  max-height: min(90dvh, 900px);
+  overflow: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 1rem 1.25rem 1.25rem;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+
+.setup-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.setup-title {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.75rem;
+  letter-spacing: 0.04em;
+}
+
+.btn-close {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+
+.btn-close:hover {
+  color: var(--text);
+}
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.setup-actions {
+  display: flex;
+  align-items: end;
+}
+
+.setup-events-block {
+  margin-top: 1rem;
+}
+
+.field-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.field-label a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.field-label a:hover {
+  text-decoration: underline;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: #0a0608;
+  color: var(--text);
+}
+
+input:focus,
+select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+}
+
+.btn {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--r-md);
+  border: none;
+  background: linear-gradient(180deg, #8b3844, #5c242e);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.event-hint {
+  font-size: 0.8rem;
+  color: var(--muted);
+  max-height: 12rem;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  margin-top: 0.25rem;
+}
+
+.event-hint button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.45rem 0.65rem;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+
+.event-hint button:last-child {
+  border-bottom: none;
+}
+
+.event-hint button:hover,
+.event-hint button.active {
+  background: var(--accent-glow);
+}
+
+.event-key {
+  color: var(--muted);
+  margin-left: 0.5rem;
+  font-weight: 400;
+}
+
+.event-empty {
+  padding: 0.65rem;
+  color: var(--muted);
+}
+
+/* ——— Match display grid ——— */
+.display-root {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 0.95fr) minmax(0, 1.05fr);
+  grid-template-rows: 1fr;
+  gap: 0.4rem;
+  padding: 0 0.45rem 0.35rem;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .display-root {
+    grid-template-columns: 2.5rem 1fr;
+    grid-template-rows: minmax(0, 36%) 1fr;
+  }
+
+  .alliance-rail {
+    grid-row: 1 / -1;
+  }
+
+  .video-col {
+    grid-column: 2;
+  }
+
+  .info-col {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+
+.alliance-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  border-radius: var(--r-md);
+  min-height: 0;
+  padding: 0.25rem 0;
+}
+
+.shell.side-red .alliance-rail {
+  background: linear-gradient(180deg, #3d141a 0%, #16080b 100%);
+}
+
+.shell.side-blue .alliance-rail {
+  background: linear-gradient(180deg, #1a2238 0%, #0a0c12 100%);
+}
+
+.alliance-rail-text {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(1.35rem, 1rem + 1vw, 1.85rem);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.shell.side-red .alliance-rail-text {
+  color: #ffb8c0;
+}
+
+.shell.side-blue .alliance-rail-text {
+  color: #b8d4ff;
+}
+
+.display-col {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-col {
+  gap: 0.35rem;
+  container-type: size;
+  container-name: videocol;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.video-frame {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 16:9 player sized to fit the column (width- or height-limited) — iframe fills box */
+.video-16x9 {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 16 / 9));
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  overflow: hidden;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: #000;
+}
+
+.video-16x9 iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.video-placeholder {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  font-size: var(--fs-md);
+  line-height: 1.45;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--r-md);
+}
+
+.pit-strip {
+  margin: 0;
+  font-size: var(--fs-md);
+  color: var(--ok);
+  text-align: center;
+}
+
+.info-col {
+  gap: 0.35rem;
+  overflow: hidden;
+}
+
+.match-block {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.match-label {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.match-title {
+  margin: 0;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: var(--fs-match-title);
+  letter-spacing: 0.03em;
+  color: var(--accent);
+  line-height: 1.08;
+}
+
+.timer-block {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem 1rem;
+  flex-shrink: 0;
+  padding: 0.45rem 0.5rem;
+  background: linear-gradient(180deg, rgba(199, 92, 107, 0.09), transparent);
+  border-radius: var(--r-lg);
+  border: 1px solid rgba(199, 92, 107, 0.22);
+}
+
+.timer-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.timer-digits {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: var(--fs-timer);
+  line-height: 0.9;
+  letter-spacing: 0.015em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-digits.soon {
+  color: var(--warn);
+  font-size: var(--fs-timer-soon);
+}
+
+.timer-sub {
+  font-size: var(--fs-md);
+  line-height: 1.35;
+  color: var(--muted);
+  margin: 0.2rem 0 0;
+}
+
+.timer-trim {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0 0.2rem 0.85rem;
+  border-left: 1px solid rgba(199, 92, 107, 0.28);
+  max-width: 8.75rem;
+}
+
+.timer-trim-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  width: 100%;
+  max-width: 7rem;
+}
+
+.timer-trim-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-align: center;
+}
+
+.btn-trim {
+  min-width: 0;
+  padding: 0.32rem 0.35rem;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.btn-trim:hover {
+  background: rgba(199, 92, 107, 0.18);
+  border-color: var(--accent);
+}
+
+.timer-trim-value {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  text-align: center;
+}
+
+.btn-trim-reset {
+  padding: 0.15rem 0.35rem;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.btn-trim-reset:hover {
+  color: var(--text);
+}
+
+@media (max-width: 26rem) {
+  .timer-block {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .timer-trim {
+    border-left: none;
+    border-top: 1px solid rgba(199, 92, 107, 0.28);
+    padding-left: 0;
+    padding-top: 0.5rem;
+    max-width: none;
+  }
+
+  .timer-trim-btns {
+    max-width: none;
+  }
+}
+
+.stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0.35rem 0.55rem;
+  min-width: 5.75rem;
+  text-align: center;
+}
+
+.stat-card-wide {
+  min-width: 8.5rem;
+}
+
+.stat-card.pit {
+  border-color: rgba(106, 171, 125, 0.4);
+}
+
+.stat-label {
+  display: block;
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.stat-value {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(1.1rem, 0.95rem + 0.65vw, 1.5rem);
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.pit-txt {
+  font-family: "DM Sans", sans-serif;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--ok);
+}
+
+.meta-line {
+  margin: 0;
+  text-align: center;
+  font-size: var(--fs-md);
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.rosters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.roster {
+  background: var(--bg-panel);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  padding: 0.55rem 0.65rem;
+  overflow: hidden;
+  min-height: 0;
+  text-align: left;
+}
+
+/* Section titles: sans-serif labels — distinct from Bebas team numbers below */
+.roster h2 {
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.35rem;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: left;
+  color: rgba(242, 233, 235, 0.72);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  line-height: 1.2;
+}
+
+.roster-us.alliance-red h2 {
+  border-bottom-color: rgba(232, 93, 111, 0.55);
+}
+
+.roster-us.alliance-blue h2 {
+  border-bottom-color: rgba(107, 156, 255, 0.45);
+}
+
+.roster-them.alliance-red h2 {
+  border-bottom-color: rgba(232, 93, 111, 0.55);
+}
+
+.roster-them.alliance-blue h2 {
+  border-bottom-color: rgba(107, 156, 255, 0.45);
+}
+
+.roster ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.roster li {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  padding: 0.32rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: var(--fs-roster-line);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.roster li:last-child {
+  border-bottom: none;
+}
+
+.you-row {
+  background: rgba(199, 92, 107, 0.1);
+  border-radius: var(--r-sm);
+}
+
+.roster .team-num {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 1.38em;
+  flex: 0 0 5.5ch;
+  min-width: 5.5ch;
+  text-align: left;
+  line-height: 1.1;
+}
+
+.roster.alliance-red .team-num {
+  color: var(--alliance-red);
+}
+
+.roster.alliance-blue .team-num {
+  color: var(--alliance-blue);
+}
+
+.team-nick {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.you-pill {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(199, 92, 107, 0.28);
+  color: #f0c8ce;
+  padding: 0.14rem 0.45rem;
+  border-radius: var(--r-sm);
+  margin-left: 0.35rem;
+}
+
+.error-box {
+  background: rgba(139, 40, 52, 0.2);
+  border: 1px solid rgba(199, 92, 107, 0.45);
+  color: #f0c8ce;
+  padding: 0.75rem 1rem;
+  border-radius: var(--r-md);
+  font-size: 0.9rem;
+}
+
+.idle-msg {
+  text-align: center;
+  padding: 1rem;
+  color: var(--muted);
+  font-size: var(--fs-md);
+  line-height: 1.45;
+  max-width: 28rem;
+}
+
+.full-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.foot-note {
+  flex: 0 0 auto;
+  text-align: center;
+  font-size: var(--fs-xs);
+  line-height: 1.35;
+  color: var(--muted);
+  padding: 0.15rem 0.35rem;
+  opacity: 0.85;
+}
