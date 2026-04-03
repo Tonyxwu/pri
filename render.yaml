@@ -12,6 +12,7 @@ services:
     runtime: node
     plan: free
     rootDir: my-backend
+    # Root `npm install` alone skips devDependencies when NODE_ENV=production, so Vite is missing and dist/ is never built.
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
