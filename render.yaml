@@ -1,11 +1,19 @@
 # https://render.com/docs/blueprint-spec
+#
+# IMPORTANT — Root Directory
+# In the Render dashboard: Service → Settings → Build & Deploy → Root Directory
+# must be EMPTY (repo root), NOT "my-backend", unless you actually have that folder.
+#
+# If this app lives in a subfolder of the repo, set rootDir below (e.g. rootDir: pitUI2).
+#
 services:
   - type: web
     name: grt-pit-ui
     runtime: node
     plan: free
+    # Omit rootDir = use repository root (where package.json + server.js are)
     buildCommand: npm install && npm run build
-    startCommand: node server.js
+    startCommand: npm start
     envVars:
       - key: NODE_VERSION
         value: "20"
