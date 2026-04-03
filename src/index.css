@@ -429,7 +429,6 @@ select:focus {
 .video-col {
   gap: 0.35rem;
   container-type: size;
-  container-name: videocol;
   flex: 1;
   min-height: 0;
   display: flex;
